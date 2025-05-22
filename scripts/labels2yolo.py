@@ -5,6 +5,11 @@ import argparse
 from tqdm import tqdm
 import utils
 import shutil
+import re  # Update
+
+def sanitize_filename(name):  # Update
+    # Replace all invalid characters with underscore
+    return re.sub(r'[<>:"/\\|?*]', '_', name) # Update
 
 
 def create_yolo_bbox_string(class_id, bbox, img_width, img_height):
@@ -89,7 +94,8 @@ def transform_dataset(input_directory, lp_size, ocr_size):
 
                 # Write OCR image
                 ocr_output_path = os.path.join(ocr_directory, 'images', 
-                    yolo_split, f'{filename}_{lp_id}.jpg')
+                    yolo_split, f'{sanitize_filename(filename)}_{sanitize_filename(lp_id)}.jpg')
+
                 # Crop lp_img to lp_bbox
                 ocr_img = lp_img[lp_bbox[0][1]:lp_bbox[1][1], lp_bbox[0][0]:lp_bbox[1][0]]
                 ocr_img_offset_x = lp_bbox[0][0]
@@ -111,7 +117,8 @@ def transform_dataset(input_directory, lp_size, ocr_size):
 
                     # Write YOLO bbox annotation for character
                     ocr_yolo_path = os.path.join(ocr_directory, 'labels', yolo_split,
-                                                 f'{filename}_{lp_id}.txt')
+                                                f'{sanitize_filename(filename)}_{sanitize_filename(lp_id)}.txt')
+
                     append_write_ocr = 'a' if os.path.exists(ocr_yolo_path) else 'w'
                     with open(ocr_yolo_path, append_write_ocr) as ocr_f:
                         ocr_f.write(create_yolo_bbox_string(class_id, bbox, ocr_width, ocr_height) + '\n')
